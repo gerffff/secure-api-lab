@@ -1,15 +1,29 @@
 const express = require('express');
-// Імпортуємо наші дані
 const { users, documents, employees } = require('./data');
 const app = express();
 const PORT = 3000;
 
 // Middleware для автоматичного парсингу JSON-тіла запиту
-// Це необхідно для роботи POST-запитів
 app.use(express.json());
 
 
 // --- MIDDLEWARE ---
+
+const loggingMiddleware = (req, res, next) => {
+    // Отримуємо поточний час, HTTP метод та URL запиту
+    const timestamp = new Date().toISOString();
+    const method = req.method;
+    const url = req.url;
+
+    // Виводимо інформацію в консоль
+    console.log(`[${timestamp}] ${method} ${url}`);
+
+    // ВАЖЛИВО: передаємо управління наступному middleware
+    // Якщо не викликати next(), обробка запиту "зависне" на цьому місці
+
+    next();
+};
+
 const authMiddleware = (req, res, next) => {
     // Отримуємо дані для входу з заголовків запиту
     const login = req.headers['x-login'];
@@ -48,9 +62,12 @@ const adminOnlyMiddleware = (req, res, next) => {
     // Якщо перевірка пройдена, передаємо управління далі
     next();
 };
+
+
+
 // --- КІНЕЦЬ MIDDLEWARE ---
 
-
+app.use(loggingMiddleware);
 
 // --- МАРШРУТИ ДЛЯ РЕСУРСІВ --
 
